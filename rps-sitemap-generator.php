@@ -3,7 +3,7 @@
 Plugin Name: RPS Sitemap Generator
 Plugin URI: http://redpixel.com/
 Description: A lightweight XML sitemap generator with Multisite awareness.
-Version: 1.1
+Version: 1.1.1
 Author: Red Pixel Studios
 Author URI: http://redpixel.com/
 License: GPL3
@@ -30,12 +30,13 @@ License: GPL3
  *
  * @package rps-sitemap-generator
  * @author Red Pixel Studios
- * @version 1.1
+ * @version 1.1.1
  * @todo (maybe) Add an "exclude this post from sitemap update" option for
  * one time exclusion from the update process.
  * @todo bind pagination to stay within bounds
  * @todo add an option to use pretty permalinks in sitemap generation (note the problems with it)
  * @todo add meta queries to take advantage of exclusion from sitemap options (once meta_queries work properly)
+ * @todo fix bug that causes date to still display when timestamp is 0 (right after you delete a sitemap [cache?])
  */
 if ( ! class_exists( 'RPS_Sitemap_Generator', false ) && ! class_exists( 'RPS_Sitemap_DateTime', false ) ):
 
@@ -241,7 +242,7 @@ class RPS_Sitemap_Generator {
 			
 				<div class="updated">
 					<p>
-						<strong>Sitemap generated.</strong>
+						<strong>Sitemap generated.</strong> You may need to <a href="<?php echo admin_url( 'tools.php?page=' . self::MGMT_SLUG ); ?>">refresh this page</a> for these changes to take effect.
 					</p>
 				</div>
 				
@@ -514,7 +515,7 @@ class RPS_Sitemap_Generator {
 		
 		// These options cannot be overriden regardless of what has been stored.
 		$options_permanent = array(
-			'sitemap_path_prefix' => $_SERVER['DOCUMENT_ROOT'] . '/',
+			'sitemap_path_prefix' => ( defined( 'ABSPATH' ) ) ? ABSPATH : $_SERVER['DOCUMENT_ROOT'],
 			'posts_per_page' => 10
 		);
 		
@@ -682,7 +683,9 @@ class RPS_Sitemap_Generator {
 		// At this point, the filesystem is active. Let's do some writing :)
 		global $wp_filesystem;
 		
-		if ( ! $wp_filesystem->put_contents( $this->options->sitemap_path_prefix . $this->options->path_to_sitemap, $this->generate_sitemap_xml(), FS_CHMOD_FILE ) ) {
+		// $this->options->sitemap_path_prefix is the ABSPATH, but
+		// $wp_filesystem->abspath() is the FTP-safe ABSPATH, so we must use it here instead.
+		if ( ! $wp_filesystem->put_contents( /*$this->options->sitemap_path_prefix*/$wp_filesystem->abspath() . $this->options->path_to_sitemap, $this->generate_sitemap_xml(), FS_CHMOD_FILE ) ) {
 			$this->form_errors['rps_sitemap_action_generate'] = 'Unable to generate sitemap. Could not write to file.';
 		}
 		
