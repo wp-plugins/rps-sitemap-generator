@@ -1,6 +1,6 @@
 === RPS Sitemap Generator ===
 Contributors: redpixelstudios
-Donate link: http://redpixel.com/
+Donate link: http://redpixel.com/donate
 Tags: rps, red, pixel, studios, xml, sitemap, generator, google, multisite, support, awareness, lightweight, simple, easy, clean, settings, options
 Requires at least: 3.3.1
 Tested up to: 3.3.1
